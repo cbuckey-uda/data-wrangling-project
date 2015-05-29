@@ -9,10 +9,25 @@
 \begin{document}
     \maketitle
     \section{Problems Encountered in the Map}
-        The first problem I encountered was that even very simple code was
-        taking a long time to run and using a lot of memory. I discovered that
-        the \texttt{iterparse} function still builds an entire tree in memory unless
-        you clear the elements after processing them.
+        I began by running the street name auditing that I wrote for the Lesson
+        6 exercise, and I found a handful of abbreviated or misspelled street
+        suffixes (e.g. ``Ave'' or ``Avnue'' instead of ``Avenue''). Based on
+        these, I created the file \texttt{street\_mapping.json} to map ``messy''
+        street names to clean ones, and later applied this mapping.
+
+        While looking at street suffixes, I noticed some that were not
+        capitalized, which made me think of checking capitalization in general.
+        I wrote a function to normalize the captalization of names, and while I
+        was at it, I normalized the whitespace as well. Then I checked which
+        street names would be changed by this modification, and based on the
+        results I rewrote the function until normalizing street names would
+        improve any street name that it changed. Once this was done, I performed
+        the normalization. Under this normalization, \texttt{' Albert Sabin
+        Way'} was changed to \texttt{'Albert Sabin Way'} and \texttt{'hamilton
+        Avenue'} was changed to \texttt{'Hamilton Avenue'}. I applied
+        normalization before fixing street suffixes so that I would not have to
+        include lowercase street suffixes in my mapping.
+
     \section{Overview of the Data}
         \subsection{Output from initial cleaning programs}
             \subsubsection{}
