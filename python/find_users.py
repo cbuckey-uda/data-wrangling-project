@@ -3,6 +3,9 @@
 import xml.etree.ElementTree as ET
 import pprint
 import re
+
+from util import logging_itr
+
 """
 Your task is to explore the data a bit more.
 The first task is a fun one - find out how many unique users
@@ -17,21 +20,13 @@ def get_user(element):
 
 def process_map(filename):
     users = set()
-    for _, element in ET.iterparse(filename):
+    for _, element in logging_itr(ET.iterparse(filename)):
         user_id = get_user(element)
         if user_id is not None:
             users.add(user_id)
 
     return users
 
-
-def test():
-
-    users = process_map('example.osm')
-    pprint.pprint(users)
-    assert len(users) == 6
-
-
-
 if __name__ == "__main__":
-    test()
+    users = process_map('cincinnati_ohio.osm')
+    print '{} users contributed'.format(len(users))
