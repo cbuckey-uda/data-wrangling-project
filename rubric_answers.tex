@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage[margin=0.75in]{geometry}
+\usepackage{listings}
+\usepackage{upquote}
 
 \author{Caroline}
 \title{Data Wrangle OpenStreetMaps Data}
@@ -10,13 +12,21 @@
         The first problem I encountered was that even very simple code was
         taking a long time to run and using a lot of memory. I discovered that
         the \texttt{iterparse} function still builds an entire tree in memory unless
-        you clear the elements after processing them. This was helpful, although
-        even after this even simple programs took a few minutes to complete.
+        you clear the elements after processing them.
     \section{Overview of the Data}
         \subsection{Output from initial cleaning programs}
-            The \texttt{count\_tags.py} program output
-            \verb"{'nd': 23, 'node': 17, 'tag': 11, 'way': 2}" after processing over
-            5 million items. Something is wrong...
+            \subsubsection{}
+            The \texttt{count\_tags.py} program output was
+            \begin{lstlisting}
+            {'bounds': 1,
+             'member': 14358,
+             'nd': 2376169,
+             'node': 1926749,
+             'osm': 1,
+             'relation': 1145,
+             'tag': 750748,
+             'way': 262715}
+            \end{lstlisting}
         \subsection{Output from Mongo queries on cleaned data}
     \section{Other Ideas about the Datasets}
 
