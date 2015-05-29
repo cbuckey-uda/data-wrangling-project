@@ -1,1 +1,2 @@
  - To understand the etree iterparse function: http://effbot.org/zone/element-iterparse.htm
+ - To get iterparse working with unicode: http://bytes.com/topic/python/answers/831583-iterparse-unicode

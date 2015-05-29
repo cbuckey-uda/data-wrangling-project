@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import xml.etree.ElementTree as ET
 import pprint
-import re
+import regex
 
 from collections import Counter
 from util import logging_itr
@@ -22,9 +22,11 @@ Please complete the function 'key_type'.
 """
 
 
-lower = re.compile(r'^[a-z_]*$')
-lower_colon = re.compile(r'^[a-z_]*:[a-z_]*$')
-problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
+lower = regex.compile(ur'^[\p{Ll}_]*$')
+alpha = regex.compile(ur'^[\p{L}_]*$')
+word_plus_colon = regex.compile(ur'^[\w:]*$')
+lower_colon = regex.compile(ur'^[\p{Ll}_]*:[\p{Ll}_:]*$')
+problemchars = regex.compile(ur'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 
 def key_type(element):
     if element.tag == "tag":
@@ -32,9 +34,14 @@ def key_type(element):
             return 'lower'
         elif lower_colon.search(element.attrib['k']):
             return 'lower_colon'
+        elif alpha.search(element.attrib['k']):
+            return 'alpha_with_upper'
+        elif word_plus_colon.search(element.attrib['k']):
+            return 'word_plus_colon'
         elif problemchars.search(element.attrib['k']):
             return 'problem_chars'
         else:
+            print 'Unidentified type for key "{}"'.format(element.attrib['k'])
             return 'other'
 
 def process_map(filename):
@@ -42,7 +49,7 @@ def process_map(filename):
     for _, element in logging_itr(ET.iterparse(filename)):
         ktype = key_type(element)
         if ktype is not None:
-            keys[key_type(element)] += 1
+            keys[ktype] += 1
 
     return keys
 

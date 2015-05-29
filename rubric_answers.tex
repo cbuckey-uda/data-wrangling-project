@@ -41,7 +41,26 @@
             characters not listed in the problematic characters set.
 
             To investigate this, I updated \texttt{count\_key\_types.py} to
-            break down ``other'' into more detailed categories.
+            include unicode lowercase characters within the ``lower'' and
+            ``lower\_colon'' classes, and I added the classes
+            ``alpha\_with\_upper'' for keys with only letters and underscores,
+            but at least one uppercase, and ``word\_plus\_colon'' for keys
+            containing alphanumeric characters, underscores, and colons. I also
+            modified ``lower\_colon'' to accept multiple colons. After this, the
+            program output was 
+            \begin{lstlisting}
+            [('lower', 443987),
+             ('lower_colon', 295889),
+             ('word_plus_colon', 10459),
+             ('alpha_with_upper', 373),
+             ('other', 40)]
+            \end{lstlisting}
+            Thus, it looks like most of the ``other'' keys were keys that
+            contained some mix of letters, numbers, underscores, and colons.
+            
+            Since at this point there were only 40 ``other'' keys left, I
+            decided to print them out, and it turned out all of them contained
+            hyphens.
         \subsection{Output from Mongo queries on cleaned data}
     \section{Other Ideas about the Datasets}
 
