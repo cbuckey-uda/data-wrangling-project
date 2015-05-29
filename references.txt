@@ -1,1 +1,1 @@
-N/A
+ - To understand the etree iterparse function: http://effbot.org/zone/element-iterparse.htm

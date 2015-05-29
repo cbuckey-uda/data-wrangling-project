@@ -7,7 +7,17 @@
 \begin{document}
     \maketitle
     \section{Problems Encountered in the Map}
+        The first problem I encountered was that even very simple code was
+        taking a long time to run and using a lot of memory. I discovered that
+        the \texttt{iterparse} function still builds an entire tree in memory unless
+        you clear the elements after processing them. This was helpful, although
+        even after this even simple programs took a few minutes to complete.
     \section{Overview of the Data}
+        \subsection{Output from initial cleaning programs}
+            The \texttt{count\_tags.py} program output
+            \verb"{'nd': 23, 'node': 17, 'tag': 11, 'way': 2}" after processing over
+            5 million items. Something is wrong...
+        \subsection{Output from Mongo queries on cleaned data}
     \section{Other Ideas about the Datasets}
 
 \end{document}
