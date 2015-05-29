@@ -3,6 +3,10 @@
 import xml.etree.ElementTree as ET
 import pprint
 import re
+
+from collections import Counter
+from util import logging_itr
+
 """
 Your task is to explore the data a bit more.
 Before you process the data and add it into MongoDB, you should
@@ -18,43 +22,30 @@ Please complete the function 'key_type'.
 """
 
 
-lower = re.compile(r'^([a-z]|_)*$')
-lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
+lower = re.compile(r'^[a-z_]*$')
+lower_colon = re.compile(r'^[a-z_]*:[a-z_]*$')
 problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 
-
-def key_type(element, keys):
+def key_type(element):
     if element.tag == "tag":
-        # YOUR CODE HERE
         if lower.search(element.attrib['k']):
-            keys['lower'] += 1
+            return 'lower'
         elif lower_colon.search(element.attrib['k']):
-            keys['lower_colon'] += 1
+            return 'lower_colon'
         elif problemchars.search(element.attrib['k']):
-            keys['problemchars'] += 1
+            return 'problem_chars'
         else:
-            keys['other'] += 1
-        
-    return keys
-
-
+            return 'other'
 
 def process_map(filename):
-    keys = {"lower": 0, "lower_colon": 0, "problemchars": 0, "other": 0}
-    for _, element in ET.iterparse(filename):
-        keys = key_type(element, keys)
+    keys = Counter()
+    for _, element in logging_itr(ET.iterparse(filename)):
+        ktype = key_type(element)
+        if ktype is not None:
+            keys[key_type(element)] += 1
 
     return keys
 
-
-
-def test():
-    # You can use another testfile 'map.osm' to look at your solution
-    # Note that the assertions will be incorrect then.
-    keys = process_map('example.osm')
-    pprint.pprint(keys)
-    assert keys == {'lower': 5, 'lower_colon': 0, 'other': 1, 'problemchars': 1}
-
-
 if __name__ == "__main__":
-    test()
+    keys = process_map('cincinnati_ohio.osm')
+    pprint.pprint(keys.most_common())

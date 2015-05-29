@@ -27,6 +27,21 @@
              'tag': 750748,
              'way': 262715}
             \end{lstlisting}
+
+            \subsubsection{}
+            First I ran the \texttt{count\_key\_types.py} as written for the
+            exercise, and the output was
+            \begin{lstlisting}
+            [('lower', 443987), ('lower_colon', 294418), ('other', 12343)]
+            \end{lstlisting}
+            This means that there were no ``problematic characters'', however,
+            there were quite a few keys of type ``other'', which could mean many
+            different things. There could be uppercase characters, non-ascii
+            characters, multiple colons in a single field name, or other strange
+            characters not listed in the problematic characters set.
+
+            To investigate this, I updated \texttt{count\_key\_types.py} to
+            break down ``other'' into more detailed categories.
         \subsection{Output from Mongo queries on cleaned data}
     \section{Other Ideas about the Datasets}
 
