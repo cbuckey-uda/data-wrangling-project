@@ -102,44 +102,62 @@ def update_name(name, mapping=STREET_MAPPING):
 CREATED = [ "version", "changeset", "timestamp", "user", "uid"]
 POS = [ "lat", "lon"]
 
+def get_pos(element):
+    lat, lon = POS
+    try:
+        return [float(element.attrib[lat]), float(element.attrib[lon])]
+    except KeyError:
+        return None
+    except ValueError:
+        print 'Invalid lat or lon in {}'.format(element.attrib)
+        return None
+
+def get_created(element):
+    return {key: element.attrib[key] for key in CREATED if key in element.attrib}
+
+def parse_attrib(element):
+    return {k: v for k, v in element.attrib.items() if k not in CREATED and k not in POS}
+
+def parse_tags(tags):
+    node = defaultdict(dict)
+    for tag in tags:
+        k, v = tag.attrib['k'], tag.attrib['v']
+        m = lower_colon.search(k)
+        if m:
+            if m.group(1) == 'addr' and not lower_colon.match(m.group(2)):
+                node['address'][m.group(2)] = v
+        else:
+            node[k] = v
+
+    return dict(node)
+
+
+def parse_nds(nds):
+    node = defaultdict(list)
+    for nd in nds:
+        if 'ref' in nd.attrib:
+            node['node_refs'].append(nd.attrib['ref'])
+    return dict(node)
+
 
 def shape_element(element):
     if element.tag == "node" or element.tag == "way":
-        node = defaultdict(dict)
+        node = {}
         node['type'] = element.tag
 
-        try:
-            node['pos'] = [float(element.attrib[POS[0]]), float(element.attrib[POS[1]])]
-        except KeyError:
-            pass
-        except ValueError:
-            print 'Invalid lat or lon in {}'.format(element.attrib)
+        # Parse position
+        pos = get_pos(element)
+        if pos is not None:
+            node['pos'] = pos
 
-        for key, value in element.attrib.items():
-            if key in CREATED:
-                node['created'][key] = value
-            elif key not in POS:
-                node[key] = value
+        # Parse created information
+        created = get_created(element)
+        if created:
+            node['created'] = created
 
-        for tag in element.iter('tag'):
-            try:
-                (k, v) = (tag.attrib['k'], tag.attrib['v'])
-            except KeyError:
-                print 'No k and v in attrib {}'.format(tag.attrib)
-                continue
-            if not problemchars.search(k):
-                m = lower_colon.search(k)
-                if m:
-                    if m.group(1) == 'addr' and not lower_colon.match(m.group(2)):
-                        node['address'][m.group(2)] = v
-                else:
-                    node[k] = v
-
-        if element.tag == 'way':
-            node = defaultdict(list, node)
-            for nd in element.iter('nd'):
-                if 'ref' in nd.attrib:
-                    node['node_refs'].append(nd.attrib['ref'])
+        node.update(parse_attrib(element))
+        node.update(parse_tags(element.iter('tag')))
+        node.update(parse_nds(element.iter('nd')))
 
         return node
     else:
@@ -159,7 +177,7 @@ def process_map(file_in, pretty = False):
                     fo.write(json.dumps(el, indent=2)+"\n")
                 else:
                     fo.write(json.dumps(el) + "\n")
-            if element.tag != 'tag':
+            if element.tag not in ('tag', 'nd'):
                 element.clear()
     return data
 
