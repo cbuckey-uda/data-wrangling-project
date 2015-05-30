@@ -2,6 +2,7 @@
 \usepackage[margin=0.75in]{geometry}
 \usepackage{listings}
 \usepackage{upquote}
+\usepackage{parskip}
 
 \author{Caroline}
 \title{Data Wrangle OpenStreetMaps Data}
@@ -22,11 +23,11 @@
         street names would be changed by this modification, and based on the
         results I rewrote the function until normalizing street names would
         improve any street name that it changed. Once this was done, I performed
-        the normalization. Under this normalization, \texttt{' Albert Sabin
-        Way'} was changed to \texttt{'Albert Sabin Way'} and \texttt{'hamilton
-        Avenue'} was changed to \texttt{'Hamilton Avenue'}. I applied
-        normalization before fixing street suffixes so that I would not have to
-        include lowercase street suffixes in my mapping.
+        the normalization. Under this normalization, \verb"' Albert Sabin Way'"
+        was changed to \verb"'Albert Sabin Way'" and \verb"'hamilton Avenue'"
+        was changed to \verb"'Hamilton Avenue'". I applied normalization before
+        fixing street suffixes so that I would not have to include lowercase
+        street suffixes in my mapping.
 
     \section{Overview of the Data}
         \subsection{Output from initial cleaning programs}
