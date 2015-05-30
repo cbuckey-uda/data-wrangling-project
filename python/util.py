@@ -4,7 +4,7 @@ import regex
 lower = regex.compile(ur'^[\p{Ll}_]*$')
 alpha = regex.compile(ur'^[\p{L}_]*$')
 word_plus_colon = regex.compile(ur'^[\w:]*$')
-lower_colon = regex.compile(ur'^[\p{Ll}_]*:[\p{Ll}_:]*$')
+lower_colon = regex.compile(ur'^([\p{Ll}_]*):([\p{Ll}_:]*)$')
 problemchars = regex.compile(ur'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 
 non_whitespace_re = regex.compile(ur'\S+')

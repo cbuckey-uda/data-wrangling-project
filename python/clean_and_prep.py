@@ -159,7 +159,8 @@ def process_map(file_in, pretty = False):
                     fo.write(json.dumps(el, indent=2)+"\n")
                 else:
                     fo.write(json.dumps(el) + "\n")
-            element.clear()
+            if element.tag != 'tag':
+                element.clear()
     return data
 
 if __name__ == "__main__":
