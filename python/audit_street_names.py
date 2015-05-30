@@ -13,20 +13,13 @@ import xml.etree.cElementTree as ET
 import regex
 import pprint
 
-from util import defaultdict, logging_itr
+from util import defaultdict, logging_itr, normalize_name
 
 OSMFILE = "cincinnati_ohio.osm"
 street_type_re = regex.compile(ur'^(.*\s)(\S+\.?)$', regex.IGNORECASE)
 
 expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square", "Lane", "Road",
             "Trail", "Parkway", "Commons"]
-
-# UPDATE THIS VARIABLE
-mapping = { "St": "Street",
-            "St.": "Street",
-            "Ave": "Avenue",
-            "Rd.": "Road"
-            }
 
 def split_street(street_name):
     m = street_type_re.search(street_name)
@@ -82,36 +75,6 @@ def audit(osmfile):
             elem.clear()
 
     return street_types, unnormalized_street_names
-
-non_whitespace_re = regex.compile(ur'\S+')
-def normalize_name(name):
-    '''
-    Returns a version of the given name with normalized whitespace (no leading
-    or trailing whitespace, and all other whitespace areas collapsed to one
-    space) and each word is capitalized.
-    '''
-    def capitalize(s):
-        '''
-        Sets the first character of s to be uppercase. Differs from
-        str.capitalize in that it does **not** set other letters to lowercase
-        if they are not already.
-
-        Does not change words with fewer than 4 characters.
-        '''
-        if len(s) >= 4:
-            return s[0].upper() + s[1:]
-        else:
-            return s
-
-    return ' '.join(map(capitalize, non_whitespace_re.findall(name)))
-
-
-def update_name(name, mapping):
-    street_base, street_type = split_street(name)
-    if street_type is not None and street_type in mapping:
-        name = street_base + mapping[street_type]
-
-    return name
 
 if __name__ == '__main__':
     st_types, unnorm_sts = audit(OSMFILE)

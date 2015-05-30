@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 import xml.etree.ElementTree as ET
 import pprint
-import regex
 
 from collections import Counter
-from util import logging_itr
+from util import logging_itr, lower, alpha, word_plus_colon, lower_colon, problemchars
 
 """
 Your task is to explore the data a bit more.
@@ -22,11 +21,6 @@ Please complete the function 'key_type'.
 """
 
 
-lower = regex.compile(ur'^[\p{Ll}_]*$')
-alpha = regex.compile(ur'^[\p{L}_]*$')
-word_plus_colon = regex.compile(ur'^[\w:]*$')
-lower_colon = regex.compile(ur'^[\p{Ll}_]*:[\p{Ll}_:]*$')
-problemchars = regex.compile(ur'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 
 def key_type(element):
     if element.tag == "tag":

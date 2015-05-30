@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 import xml.etree.ElementTree as ET
 import pprint
-import re
 import codecs
 import json
 
-from collections import defaultdict
+from util import defaultdict, lower, lower_colon, problemchars, normalize_name
 
 """
 Your task is to wrangle the data and transform the shape of the data
@@ -40,12 +39,12 @@ You have to complete the function 'shape_element'.
 We have provided a function that will parse the map file, and call the function with the element
 as an argument. You should return a dictionary, containing the shaped data for that element.
 We have also provided a way to save the data in a file, so that you could use
-mongoimport later on to import the shaped data into MongoDB. 
+mongoimport later on to import the shaped data into MongoDB.
 
 Note that in this exercise we do not use the 'update street name' procedures
 you worked on in the previous exercise. If you are using this code in your final
-project, you are strongly encouraged to use the code from previous exercise to 
-update the street names before you save them to JSON. 
+project, you are strongly encouraged to use the code from previous exercise to
+update the street names before you save them to JSON.
 
 In particular the following things should be done:
 - you should process only 2 types of top level tags: "node" and "way"
@@ -53,7 +52,7 @@ In particular the following things should be done:
     - attributes in the CREATED array should be added under a key "created"
     - attributes for latitude and longitude should be added to a "pos" array,
       for use in geospacial indexing. Make sure the values inside "pos" array are floats
-      and not strings. 
+      and not strings.
 - if second level tag "k" value contains problematic characters, it should be ignored
 - if second level tag "k" value starts with "addr:", it should be added to a dictionary "address"
 - if second level tag "k" value does not start with "addr:", but contains ":", you can process it
@@ -88,10 +87,17 @@ should be turned into
 "node_refs": ["305896090", "1719825889"]
 """
 
+with open('street_mapping.json') as f:
+    STREET_MAPPING = json.load(f)
 
-lower = re.compile(r'^([a-z]|_)*$')
-lower_colon = re.compile(r'^([a-z_]*):([a-z_]*)$')
-problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
+def update_name(name, mapping=STREET_MAPPING):
+    name = normalize_name(name)
+
+    street_base, street_type = split_street(name)
+    if street_type is not None and street_type in mapping:
+        name = street_base + mapping[street_type]
+
+    return name
 
 CREATED = [ "version", "changeset", "timestamp", "user", "uid"]
 POS = [ "lat", "lon"]
@@ -101,20 +107,20 @@ def shape_element(element):
     if element.tag == "node" or element.tag == "way":
         node = defaultdict(dict)
         node['type'] = element.tag
-        
+
         try:
             node['pos'] = [float(element.attrib[POS[0]]), float(element.attrib[POS[1]])]
         except KeyError:
             pass
         except ValueError:
             print 'Invalid lat or lon in {}'.format(element.attrib)
-            
+
         for key, value in element.attrib.items():
             if key in CREATED:
                 node['created'][key] = value
             elif key not in POS:
                 node[key] = value
-        
+
         for tag in element.iter('tag'):
             (k, v) = (tag.attrib['k'], tag.attrib['v'])
             if not problemchars.search(k):
@@ -124,13 +130,13 @@ def shape_element(element):
                         node['address'][m.group(2)] = v
                 else:
                     node[k] = v
-                    
+
         if element.tag == 'way':
             node = defaultdict(list, node)
             for nd in element.iter('nd'):
                 if 'ref' in nd.attrib:
                     node['node_refs'].append(nd.attrib['ref'])
-            
+
         return dict(node)
     else:
         return None
@@ -152,22 +158,22 @@ def process_map(file_in, pretty = False):
     return data
 
 def test():
-    # NOTE: if you are running this code on your computer, with a larger dataset, 
-    # call the process_map procedure with pretty=False. The pretty=True option adds 
+    # NOTE: if you are running this code on your computer, with a larger dataset,
+    # call the process_map procedure with pretty=False. The pretty=True option adds
     # additional spaces to the output, making it significantly larger.
     data = process_map('example.osm', True)
     #pprint.pprint(data)
-    
+
     correct_first_elem = {
-        "id": "261114295", 
-        "visible": "true", 
-        "type": "node", 
-        "pos": [41.9730791, -87.6866303], 
+        "id": "261114295",
+        "visible": "true",
+        "type": "node",
+        "pos": [41.9730791, -87.6866303],
         "created": {
-            "changeset": "11129782", 
-            "user": "bbmiller", 
-            "version": "7", 
-            "uid": "451048", 
+            "changeset": "11129782",
+            "user": "bbmiller",
+            "version": "7",
+            "uid": "451048",
             "timestamp": "2012-03-28T18:31:23Z"
         }
     }
@@ -175,10 +181,10 @@ def test():
     pprint.pprint(data[-1])
     assert data[0] == correct_first_elem
     assert data[-1]["address"] == {
-                                    "street": "West Lexington St.", 
+                                    "street": "West Lexington St.",
                                     "housenumber": "1412"
                                       }
-    assert data[-1]["node_refs"] == [ "2199822281", "2199822390",  "2199822392", "2199822369", 
+    assert data[-1]["node_refs"] == [ "2199822281", "2199822390",  "2199822392", "2199822369",
                                     "2199822370", "2199822284", "2199822281"]
 
 if __name__ == "__main__":
