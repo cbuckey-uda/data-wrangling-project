@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import pprint
 import codecs
 import json
+import os.path
 
 from util import defaultdict, lower, lower_colon, problemchars, street_type_re, split_street, normalize_name
 
@@ -173,23 +174,20 @@ def shape_element(element):
         return None
 
 
-def process_map(file_in, pretty = False):
+def basename(filename):
+    return os.path.splitext(filename)[0]
+
+
+def process_map(file_in):
     # You do not need to change this file
-    file_out = "{0}.json".format(file_in)
-    data = []
+    file_out = "{0}.json".format(basename(file_in))
     with codecs.open(file_out, "w") as fo:
         for _, element in ET.iterparse(file_in):
             el = shape_element(element)
             if el:
-                data.append(el)
-                if pretty:
-                    fo.write(json.dumps(el, indent=2)+"\n")
-                else:
-                    fo.write(json.dumps(el) + "\n")
+                fo.write(json.dumps(el) + "\n")
             if element.tag not in ('tag', 'nd'):
                 element.clear()
-    return data
 
 if __name__ == "__main__":
-    data = process_map('example.osm', True)
-    pprint.pprint(data)
+    process_map('cincinnati_ohio.osm')

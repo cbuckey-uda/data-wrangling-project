@@ -1,3 +1,4 @@
  - To understand the etree iterparse function: http://effbot.org/zone/element-iterparse.htm
  - To get iterparse working with unicode: http://bytes.com/topic/python/answers/831583-iterparse-unicode
  - On subclassing in Python: http://stackoverflow.com/questions/753640/inheritance-and-overriding-init-in-python
+ - To get basename of file in Python: http://stackoverflow.com/questions/678236/how-to-get-the-filename-without-the-extension-from-a-path-in-python
