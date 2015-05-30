@@ -5,7 +5,7 @@ import pprint
 import codecs
 import json
 
-from util import defaultdict, lower, lower_colon, problemchars, split_street, normalize_name
+from util import defaultdict, lower, lower_colon, problemchars, street_type_re, split_street, normalize_name
 
 """
 Your task is to wrangle the data and transform the shape of the data
@@ -139,6 +139,11 @@ def parse_nds(nds):
             node['node_refs'].append(nd.attrib['ref'])
     return dict(node)
 
+def fix_street_name(node):
+    street_name = node.get('address', {}).get('street')
+    if street_name is not None:
+        node['address']['street'] = update_name(street_name)
+
 
 def shape_element(element):
     if element.tag == "node" or element.tag == "way":
@@ -155,9 +160,13 @@ def shape_element(element):
         if created:
             node['created'] = created
 
+        # Parse remaining information
         node.update(parse_attrib(element))
         node.update(parse_tags(element.iter('tag')))
         node.update(parse_nds(element.iter('nd')))
+
+        # Clean street names
+        fix_street_name(node)
 
         return node
     else:

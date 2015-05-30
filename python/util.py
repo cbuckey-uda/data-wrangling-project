@@ -6,6 +6,7 @@ alpha = regex.compile(ur'^[\p{L}_]*$')
 word_plus_colon = regex.compile(ur'^[\w:]*$')
 lower_colon = regex.compile(ur'^([\p{Ll}_]*):([\p{Ll}_:]*)$')
 problemchars = regex.compile(ur'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
+street_type_re = regex.compile(ur'^(.*\s)(\S+\.?)$', regex.IGNORECASE)
 
 non_whitespace_re = regex.compile(ur'\S+')
 

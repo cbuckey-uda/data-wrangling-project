@@ -13,10 +13,9 @@ import xml.etree.cElementTree as ET
 import regex
 import pprint
 
-from util import defaultdict, logging_itr, split_street, normalize_name
+from util import defaultdict, logging_itr, split_street, normalize_name, street_type_re
 
 OSMFILE = "cincinnati_ohio.osm"
-street_type_re = regex.compile(ur'^(.*\s)(\S+\.?)$', regex.IGNORECASE)
 
 expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square", "Lane", "Road",
             "Trail", "Parkway", "Commons"]
