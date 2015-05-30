@@ -13,7 +13,7 @@ import xml.etree.cElementTree as ET
 import regex
 import pprint
 
-from util import defaultdict, logging_itr, normalize_name
+from util import defaultdict, logging_itr, split_street, normalize_name
 
 OSMFILE = "cincinnati_ohio.osm"
 street_type_re = regex.compile(ur'^(.*\s)(\S+\.?)$', regex.IGNORECASE)
@@ -21,12 +21,6 @@ street_type_re = regex.compile(ur'^(.*\s)(\S+\.?)$', regex.IGNORECASE)
 expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square", "Lane", "Road",
             "Trail", "Parkway", "Commons"]
 
-def split_street(street_name):
-    m = street_type_re.search(street_name)
-    if m:
-        return m.group(1), m.group(2)
-    else:
-        return street_name, None
 
 
 def get_street_type(street_name):

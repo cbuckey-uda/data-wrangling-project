@@ -39,3 +39,10 @@ def normalize_name(name):
             return s
 
     return ' '.join(map(capitalize, non_whitespace_re.findall(name)))
+
+def split_street(street_name):
+    m = street_type_re.search(street_name)
+    if m:
+        return m.group(1), m.group(2)
+    else:
+        return street_name, None

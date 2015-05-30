@@ -5,7 +5,7 @@ import pprint
 import codecs
 import json
 
-from util import defaultdict, lower, lower_colon, problemchars, normalize_name
+from util import defaultdict, lower, lower_colon, problemchars, split_street, normalize_name
 
 """
 Your task is to wrangle the data and transform the shape of the data
@@ -122,7 +122,11 @@ def shape_element(element):
                 node[key] = value
 
         for tag in element.iter('tag'):
-            (k, v) = (tag.attrib['k'], tag.attrib['v'])
+            try:
+                (k, v) = (tag.attrib['k'], tag.attrib['v'])
+            except KeyError:
+                print 'No k and v in attrib {}'.format(tag.attrib)
+                continue
             if not problemchars.search(k):
                 m = lower_colon.search(k)
                 if m:
@@ -137,7 +141,7 @@ def shape_element(element):
                 if 'ref' in nd.attrib:
                     node['node_refs'].append(nd.attrib['ref'])
 
-        return dict(node)
+        return node
     else:
         return None
 
@@ -155,37 +159,9 @@ def process_map(file_in, pretty = False):
                     fo.write(json.dumps(el, indent=2)+"\n")
                 else:
                     fo.write(json.dumps(el) + "\n")
+            element.clear()
     return data
 
-def test():
-    # NOTE: if you are running this code on your computer, with a larger dataset,
-    # call the process_map procedure with pretty=False. The pretty=True option adds
-    # additional spaces to the output, making it significantly larger.
-    data = process_map('example.osm', True)
-    #pprint.pprint(data)
-
-    correct_first_elem = {
-        "id": "261114295",
-        "visible": "true",
-        "type": "node",
-        "pos": [41.9730791, -87.6866303],
-        "created": {
-            "changeset": "11129782",
-            "user": "bbmiller",
-            "version": "7",
-            "uid": "451048",
-            "timestamp": "2012-03-28T18:31:23Z"
-        }
-    }
-
-    pprint.pprint(data[-1])
-    assert data[0] == correct_first_elem
-    assert data[-1]["address"] == {
-                                    "street": "West Lexington St.",
-                                    "housenumber": "1412"
-                                      }
-    assert data[-1]["node_refs"] == [ "2199822281", "2199822390",  "2199822392", "2199822369",
-                                    "2199822370", "2199822284", "2199822281"]
-
 if __name__ == "__main__":
-    test()
+    data = process_map('example.osm', True)
+    pprint.pprint(data)
