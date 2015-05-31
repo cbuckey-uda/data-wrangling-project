@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
 import pprint
 import codecs
 import json

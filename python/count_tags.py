@@ -10,7 +10,7 @@ the map as value.
 
 Note that your code will be tested with a different data file than the 'example.osm'
 """
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
 import pprint
 
 from collections import defaultdict
