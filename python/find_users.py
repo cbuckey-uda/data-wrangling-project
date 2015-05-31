@@ -24,6 +24,7 @@ def process_map(filename):
         user_id = get_user(element)
         if user_id is not None:
             users.add(user_id)
+        element.clear()
 
     return users
 
