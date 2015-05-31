@@ -2,3 +2,4 @@
  - To get iterparse working with unicode: http://bytes.com/topic/python/answers/831583-iterparse-unicode
  - On subclassing in Python: http://stackoverflow.com/questions/753640/inheritance-and-overriding-init-in-python
  - To get basename of file in Python: http://stackoverflow.com/questions/678236/how-to-get-the-filename-without-the-extension-from-a-path-in-python
+ - For debugging Python memory leaks: http://chase-seibert.github.io/blog/2013/08/03/diagnosing-memory-leaks-python.html

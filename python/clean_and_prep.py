@@ -6,7 +6,8 @@ import codecs
 import json
 import os.path
 
-from util import defaultdict, lower, lower_colon, problemchars, street_type_re, split_street, normalize_name
+from util import (defaultdict, lower, lower_colon, problemchars, street_type_re,
+                  split_street, normalize_name, logging_itr)
 
 """
 Your task is to wrangle the data and transform the shape of the data
@@ -182,7 +183,7 @@ def process_map(file_in):
     # You do not need to change this file
     file_out = "{0}.json".format(basename(file_in))
     with codecs.open(file_out, "w") as fo:
-        for _, element in ET.iterparse(file_in):
+        for _, element in logging_itr(ET.iterparse(file_in)):
             el = shape_element(element)
             if el:
                 fo.write(json.dumps(el) + "\n")
