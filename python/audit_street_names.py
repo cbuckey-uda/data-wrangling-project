@@ -1,13 +1,8 @@
 """
-Your task in this exercise has two steps:
-
-- audit the OSMFILE and change the variable 'mapping' to reflect the changes needed to fix
-    the unexpected street types to the appropriate ones in the expected list.
-    You have to add mappings only for the actual problems you find in this OSMFILE,
-    not a generalized solution, since that may and will depend on the particular area you are auditing.
-- write the update_name function, to actually fix the street name.
-    The function takes a string with street name as an argument and should return the fixed name
-    We have provided a simple test so that you see what exactly is expected
+This file audits the OSMFILE by checking whether there are any unexpected street
+suffixes, or whether there are any street names which would change upon
+normalization. In both cases, it prints examples of any possibly messy street
+names.
 """
 import xml.etree.cElementTree as ET
 import regex
@@ -23,6 +18,10 @@ expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square"
 
 
 def get_street_type(street_name):
+    '''
+    Gets the type or suffix from the given street name. For example,
+    get_street_type('Washington Ave.') would return 'Ave.'
+    '''
     _, street_type = split_street(street_name)
     if street_type is not None:
         return street_type
@@ -30,6 +29,10 @@ def get_street_type(street_name):
         return None
 
 def get_street_name(elem):
+    '''
+    If the given element is a tag specifying a street name, returns the street
+    name. Otherwise, returns None.
+    '''
     if elem.attrib.get('k') == 'addr:street':
         return elem.attrib['v']
     else:
@@ -37,6 +40,12 @@ def get_street_name(elem):
 
 
 def get_street_name_and_type(elem):
+    '''
+    Returns a tuple (name, type) with the street name and type, if they exist,
+    for the given element. First finds the tag that specifies the street name,
+    then extracts the street type. If either name or type does not exist, that
+    element of the tuple will be None.
+    '''
     for tag in elem.iter("tag"):
         street_name = get_street_name(tag)
         if street_name is not None:
@@ -49,6 +58,13 @@ def get_street_name_and_type(elem):
     return None, None
 
 def audit(osmfile):
+    '''
+    Performs the auditing operations on the given file. Returns a tuple
+    (street_types, unnormalized_street_names), where street_types is a
+    dictionary mapping unexpected street types to example street names with that
+    type, and unnormalized_street_names is a set of street names that are not in
+    normalized form.
+    '''
     street_types = defaultdict(set)
     unnormalized_street_names = set()
 

@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{upquote}
 \usepackage{parskip}
@@ -82,6 +83,132 @@
             By running \texttt{find\_users.py}, I determined that 536 unique
             users have contributed to the Cincinnati data.
         \subsection{Output from Mongo queries on cleaned data}
-    \section{Other Ideas about the Datasets}
 
+        \subsubsection{}
+        First, I ran findOne to verify the format of the documents.
+
+        \begin{lstlisting}
+        > db.cincinnati.findOne()
+        {
+            "_id" : ObjectId("556b5a56b589e243caae8ea8"),
+            "id" : "60513020",
+            "type" : "node",
+            "pos" : [
+                39.4307416,
+                -84.341689
+            ],
+            "created" : {
+                "uid" : "33757",
+                "changeset" : "12642091",
+                "version" : "17",
+                "user" : "Minh Nguyen",
+                "timestamp" : "2012-08-07T08:15:12Z"
+            }
+        }
+        \end{lstlisting}
+
+        \subsubsection{}
+        I tested my setup by finding the number of users again, but using
+        a Mongo query.
+
+        \begin{lstlisting}
+        > db.cincinnati.distinct('created.uid').length
+        516
+        \end{lstlisting}
+
+        This surprised me, but then I realized I had only added "node" and "way"
+        tags to the Mongo database, whereas \texttt{find\_users.py} had counted
+        users for all tag types.
+
+        \subsubsection{}
+        I also checked which users were the top contributors.
+
+        \begin{lstlisting}
+        > db.cincinnati.aggregate([
+        ...     {'$group': {'_id': '$created.uid', 'count': {'$sum': 1}}},
+        ...     {'$sort': {'count': -1}},
+        ...     {'$limit': 5}
+        ... ])
+
+        { "_id" : "33757", "count" : 900034 }
+        { "_id" : "1813535", "count" : 566050 }
+        { "_id" : "147510", "count" : 347045 }
+        { "_id" : "1108251", "count" : 233693 }
+        { "_id" : "451693", "count" : 13771 }
+        \end{lstlisting}
+
+        \subsubsection{}
+        Then I checked how many elements had been added to the collections.
+
+        \begin{lstlisting}
+        > db.cincinnati.count()
+        2189464
+        \end{lstlisting}
+
+        This is the same as the number of "node" tags plus the number of "wag"
+        tags as output by \texttt{count\_tags.py}.
+
+        \subsubsection{}
+        Then I checked for the most common street names in Cincinnati:
+
+        \begin{lstlisting}
+        > db.cincinnati.aggregate([
+        ...     {'$match': {'address.street': {'$ne': null}}},
+        ...     {'$group': {'_id': '$address.street', 'count': {'$sum': 1}}},
+        ...     {'$sort': {'count': -1}},
+        ...     {'$limit': 10}
+        ... ])
+
+        { "_id" : "Wards Corner Road", "count" : 110 }
+        { "_id" : "Main Street", "count" : 102 }
+        { "_id" : "Enyart Road", "count" : 89 }
+        { "_id" : "Branch Hill–Loveland Road", "count" : 88 }
+        { "_id" : "Sunrise Drive", "count" : 82 }
+        { "_id" : "Rosemont Avenue", "count" : 78 }
+        { "_id" : "Heidelberg Drive", "count" : 77 }
+        { "_id" : "Stockton Drive", "count" : 75 }
+        { "_id" : "Glen Lake Road", "count" : 74 }
+        { "_id" : "Lindenhall Drive", "count" : 69 }
+        \end{lstlisting}
+
+        \subsubsection{}
+        I checked the minimum and maximum latitude and longitude:
+
+        \begin{lstlisting}
+        > db.cincinnati.aggregate([
+        ...     {'$unwind': '$pos'},
+        ...     {'$group': {
+        ...         '_id': '$_id',
+        ...         'lat': {'$first': '$pos'},
+        ...         'lon': {'$last': '$pos'}}},
+        ...     {'$group': {
+        ...         '_id': 'All',
+        ...         'maxLat': {'$max': '$lat'},
+        ...         'minLat': {'$min': '$lat'},
+        ...         'maxLon': {'$max': '$lon'},
+        ...         'minLon': {'$min': '$lon'}}}
+        ... ], {'allowDiskUse': true})
+
+        { "_id" : "All", "maxLat" : 39.4709987, "minLat" : 38.875,
+         "maxLon" : -84.1210019, "minLon" : -84.842999 }
+        \end{lstlisting}
+
+        This gives essentially the same result as that listed in the bounds tag
+        in the XML file, thus validating that tag.
+
+        \begin{lstlisting}
+        <bounds minlat="38.875" minlon="-84.843"
+                maxlat="39.471" maxlon="-84.121"/>
+        \end{lstlisting}
+
+        
+    \section{Other Ideas about the Dataset}
+    An interesting next task might be to compare datasets from multiple cities
+    or areas. Is the relative number of documents in different cities
+    proportional to the relative sizes of the cities? If not, one of the cities
+    may have very incomplete data. Are street suffix proportions relatively
+    constant across different areas, or do some areas use certain suffixes more
+    heavily relative to other areas? Are the same users contributing to multiple
+    different areas, or does each area have its own set of users that
+    contributes to it?
 \end{document}

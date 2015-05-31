@@ -7,22 +7,28 @@ from collections import Counter
 from util import logging_itr, lower, alpha, word_plus_colon, lower_colon, problemchars
 
 """
-Your task is to explore the data a bit more.
-Before you process the data and add it into MongoDB, you should
-check the "k" value for each "<tag>" and see if they can be valid keys in MongoDB,
-as well as see if there are any other potential problems.
-
-We have provided you with 3 regular expressions to check for certain patterns
-in the tags. As we saw in the quiz earlier, we would like to change the data model
-and expand the "addr:street" type of keys to a dictionary like this:
-{"address": {"street": "Some value"}}
-So, we have to see if we have such tags, and if we have any tags with problematic characters.
-Please complete the function 'key_type'.
+This file verifies whether any keys will be problematic by classifying them into
+various types and printing out the counts of each type.
 """
 
 
 
 def key_type(element):
+    '''
+    If the given element is a tag, returns which of 6 types the key attribute
+    belongs to:
+      - lower: The key contains only lowercase letters and underscores.
+      - lower_colon: The key contains only lowercase letters, underscores, and
+        colons.
+      - alpha_with_upper: The key contains only lettrs and underscores, and at
+        least on letter is uppercase.
+      - word_plus_colon: The key contains only word characters (letters,
+        numbers, and underscores), plus colons, but does not fit into any of the
+        above types.
+      - problem_chars: The key contains at least one problematic character, such
+        as a dot or a dollar sign.
+      - other: Anything that does not fit into the above types.
+    '''
     if element.tag == "tag":
         if lower.search(element.attrib['k']):
             return 'lower'
@@ -39,6 +45,10 @@ def key_type(element):
             return 'other'
 
 def process_map(filename):
+    '''
+    Counts the number of keys belonging to each type (as determined by the
+    function key_type) in the given input file.
+    '''
     keys = Counter()
     for _, element in logging_itr(ET.iterparse(filename)):
         ktype = key_type(element)

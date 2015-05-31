@@ -7,18 +7,20 @@ import re
 from util import logging_itr
 
 """
-Your task is to explore the data a bit more.
-The first task is a fun one - find out how many unique users
-have contributed to the map in this particular area!
-
-The function process_map should return a set of unique user IDs ("uid")
+This file finds the number of unique users who have contributed to this map.
 """
 
 def get_user(element):
+    '''
+    Returns the user id associated with the given element.
+    '''
     return element.attrib.get('uid')
 
 
 def process_map(filename):
+    '''
+    Returns a set of all users who have contributed to the given file.
+    '''
     users = set()
     for _, element in logging_itr(ET.iterparse(filename)):
         user_id = get_user(element)

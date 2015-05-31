@@ -4,3 +4,4 @@
  - To get basename of file in Python: http://stackoverflow.com/questions/678236/how-to-get-the-filename-without-the-extension-from-a-path-in-python
  - For debugging Python memory leaks: http://chase-seibert.github.io/blog/2013/08/03/diagnosing-memory-leaks-python.html
  - To understand difference between ElementTree and cElementTree: http://stackoverflow.com/questions/2351694/what-are-the-difference-between-celementtree-and-elementtree
+ - To index into arrays in Mongo: http://stackoverflow.com/questions/19174895/mongodb-query-to-find-property-of-first-element-of-array

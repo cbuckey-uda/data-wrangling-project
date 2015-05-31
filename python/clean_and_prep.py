@@ -10,89 +10,63 @@ from util import (defaultdict, lower, lower_colon, problemchars, street_type_re,
                   split_street, normalize_name, logging_itr)
 
 """
-Your task is to wrangle the data and transform the shape of the data
-into the model we mentioned earlier. The output should be a list of dictionaries
-that look like this:
+This file performs various cleaning operations on the input OSM file, then
+transforms its shape to be suitable for importing into MongoDb.
 
-{
-"id": "2406124091",
-"type: "node",
-"visible":"true",
-"created": {
-          "version":"2",
-          "changeset":"17206049",
-          "timestamp":"2013-08-03T16:43:42Z",
-          "user":"linuxUser16",
-          "uid":"1219059"
-        },
-"pos": [41.9757030, -87.6921867],
-"address": {
-          "housenumber": "5157",
-          "postcode": "60625",
-          "street": "North Lincoln Ave"
-        },
-"amenity": "restaurant",
-"cuisine": "mexican",
-"name": "La Cabana De Don Luis",
-"phone": "1 (773)-271-5176"
-}
+The cleaning operations done are:
+    - Fix incorrect street types using the mapping found in street_mapping.json
+    - Normalize any unnormalized street names by removing unnecessary whitespace
+      and fixing capitalization
 
-You have to complete the function 'shape_element'.
-We have provided a function that will parse the map file, and call the function with the element
-as an argument. You should return a dictionary, containing the shaped data for that element.
-We have also provided a way to save the data in a file, so that you could use
-mongoimport later on to import the shaped data into MongoDB.
-
-Note that in this exercise we do not use the 'update street name' procedures
-you worked on in the previous exercise. If you are using this code in your final
-project, you are strongly encouraged to use the code from previous exercise to
-update the street names before you save them to JSON.
-
-In particular the following things should be done:
-- you should process only 2 types of top level tags: "node" and "way"
-- all attributes of "node" and "way" should be turned into regular key/value pairs, except:
-    - attributes in the CREATED array should be added under a key "created"
-    - attributes for latitude and longitude should be added to a "pos" array,
-      for use in geospacial indexing. Make sure the values inside "pos" array are floats
-      and not strings.
-- if second level tag "k" value contains problematic characters, it should be ignored
-- if second level tag "k" value starts with "addr:", it should be added to a dictionary "address"
-- if second level tag "k" value does not start with "addr:", but contains ":", you can process it
-  same as any other tag.
+The shape tranformation includes the following:
+- Only 2 types of top level tags are processed: "node" and "way". Others are dropped.
+- all attributes of "node" and "way" are turned into regular key/value pairs, except:
+    - attributes in the CREATED array are dded under a key "created"
+    - attributes for latitude and longitude are added to a "pos" array, where
+      the values are floats
+- if second level tag "k" value starts with "addr:", it is added to a dictionary "address"
+- if second level tag "k" value does not start with "addr:", but contains ":",
+  it is process the same as any other tag.
 - if there is a second ":" that separates the type/direction of a street,
-  the tag should be ignored, for example:
+  the tag is ignored.
 
-<tag k="addr:housenumber" v="5158"/>
-<tag k="addr:street" v="North Lincoln Avenue"/>
-<tag k="addr:street:name" v="Lincoln"/>
-<tag k="addr:street:prefix" v="North"/>
-<tag k="addr:street:type" v="Avenue"/>
-<tag k="amenity" v="pharmacy"/>
+For example, the following XML data:
+<way id="209809850" visible="true" version="1" changeset="15353317" uid="674454">
+  <nd ref="2199822281"/>
+  <nd ref="2199822390"/>
+  <tag k="addr:housenumber" v="1412"/>
+  <tag k="addr:street" v="West Lexington St"/>
+  <tag k="addr:street:name" v="Lexington"/>
+  <tag k="addr:street:prefix" v="West"/>
+  <tag k="addr:street:type" v="Street"/>
+ </way>
 
-  should be turned into:
-
-{...
-"address": {
-    "housenumber": 5158,
-    "street": "North Lincoln Avenue"
+would be transformed into the following JSON object:
+{
+  "id": "209809850"
+  "visible": "true",
+  "node_refs": ["2199822281", "2199822390"],
+  "created": {
+    "version": "1",
+    "changeset": "15353317",
+    "uid": "674454",
+  },
+  "address": {
+    "housenumber": "1412"
+    "street": "West Lexington Street",
+  },
+  "type": "way",
 }
-"amenity": "pharmacy",
-...
-}
-
-- for "way" specifically:
-
-  <nd ref="305896090"/>
-  <nd ref="1719825889"/>
-
-should be turned into
-"node_refs": ["305896090", "1719825889"]
 """
 
 with open('street_mapping.json') as f:
     STREET_MAPPING = json.load(f)
 
 def update_name(name, mapping=STREET_MAPPING):
+    '''
+    Cleans the given street name by replacing any suffix as specified by the
+    given mapping, removing excess whitespace, and fixing capitalization.
+    '''
     name = normalize_name(name)
 
     street_base, street_type = split_street(name)
@@ -105,6 +79,10 @@ CREATED = [ "version", "changeset", "timestamp", "user", "uid"]
 POS = [ "lat", "lon"]
 
 def get_pos(element):
+    '''
+    Extracts the lat and lon from the given element and returns them as an
+    array. If there is no lat or lon, returns None.
+    '''
     lat, lon = POS
     try:
         return [float(element.attrib[lat]), float(element.attrib[lon])]
@@ -115,12 +93,36 @@ def get_pos(element):
         return None
 
 def get_created(element):
+    '''
+    Returns the created dictionary for the given element.
+    '''
     return {key: element.attrib[key] for key in CREATED if key in element.attrib}
 
 def parse_attrib(element):
-    return {k: v for k, v in element.attrib.items() if k not in CREATED and k not in POS}
+    '''
+    Parses the attributes of the given element, and returns a node dictionary
+    including a pos array rather than lat and lon elements and a nested created
+    dictionary if appropriate.
+    '''
+    node = {k: v for k, v in element.attrib.items() if k not in CREATED and k not in POS}
+
+    # Parse position
+    pos = get_pos(element)
+    if pos is not None:
+        node['pos'] = pos
+
+    # Parse created information
+    created = get_created(element)
+    if created:
+        node['created'] = created
+
+    return node
 
 def parse_tags(tags):
+    '''
+    Parses the given tag elements and returns a node dictionary. Includes a nested
+    address dictionary if appropriate.
+    '''
     node = defaultdict(dict)
     for tag in tags:
         k, v = tag.attrib['k'], tag.attrib['v']
@@ -135,6 +137,10 @@ def parse_tags(tags):
 
 
 def parse_nds(nds):
+    '''
+    Parses the given nd elements and returns a node dictionary contaning a
+    node_refs array if there are any refs.
+    '''
     node = defaultdict(list)
     for nd in nds:
         if 'ref' in nd.attrib:
@@ -142,32 +148,26 @@ def parse_nds(nds):
     return dict(node)
 
 def fix_street_name(node):
+    '''
+    Updates the street name in the given node using the update_name function.
+    '''
     street_name = node.get('address', {}).get('street')
     if street_name is not None:
         node['address']['street'] = update_name(street_name)
 
 
 def shape_element(element):
+    '''
+    Turns the given element into a dictionary, transformed and cleaned as
+    described in the file docstring.
+    '''
     if element.tag == "node" or element.tag == "way":
-        node = {}
-        node['type'] = element.tag
+        node = {'type': element.tag}
 
-        # Parse position
-        pos = get_pos(element)
-        if pos is not None:
-            node['pos'] = pos
-
-        # Parse created information
-        created = get_created(element)
-        if created:
-            node['created'] = created
-
-        # Parse remaining information
         node.update(parse_attrib(element))
         node.update(parse_tags(element.iter('tag')))
         node.update(parse_nds(element.iter('nd')))
 
-        # Clean street names
         fix_street_name(node)
 
         return node
@@ -176,11 +176,17 @@ def shape_element(element):
 
 
 def basename(filename):
+    '''
+    Returns the basename of the given filename, without an extension.
+    '''
     return os.path.splitext(filename)[0]
 
 
 def process_map(file_in):
-    # You do not need to change this file
+    '''
+    Processes the given XML file as described in the file docstring. Writes
+    output to a file with the same name, but a json extension.
+    '''
     file_out = "{0}.json".format(basename(file_in))
     with codecs.open(file_out, "w") as fo:
         for _, element in logging_itr(ET.iterparse(file_in)):
@@ -191,4 +197,4 @@ def process_map(file_in):
                 element.clear()
 
 if __name__ == "__main__":
-    process_map('cincinnati_ohio.osm')
+    process_map('example.osm')
