@@ -210,5 +210,29 @@
     constant across different areas, or do some areas use certain suffixes more
     heavily relative to other areas? Are the same users contributing to multiple
     different areas, or does each area have its own set of users that
-    contributes to it?
+    contributes to it? This information could be used to identify problems in
+    one area that are not present in another or analyze cultural differences
+    between place names in different areas.
+
+    For a small number of areas, these comparisons could be performed in a
+    similar method as to this project, but by loading multiple areas into
+    separate collections. (This extension would work since right now I have
+    loaded the entire dataset for Cincinnati into a single collection.) Then
+    a Mongo query, to e.g., find the most common street suffixes, could be
+    performed on each collection and the results compared. However, this process
+    could get tedious for a large number of areas.
+
+    Perhaps a more scalable approach than the above would be to continue to keep
+    all the data in a single collection, but add a new field to indicate what
+    area the data is from. Then Mongo aggregation queries could be used to group
+    by the area name and summarize output by area.
+
+    One potential challenge is that for a large number of datasets, the datasize
+    could get quite large. The Python code I have parses the XML files
+    iteratively, and databases in general are designed to handle large datasets,
+    so this should not be as long as the entire data can fit on the disk of a
+    single machine. Beyond this point, more advanced Mongo administration or a
+    different approach would become necessary. Also, Mongo performs much more
+    quickly when the entire dataset can fit in memory, so once that threshold
+    was passed, it could take quite a bit longer to get results.
 \end{document}
