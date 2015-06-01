@@ -1,0 +1,7 @@
+I used the Cincinnati, Ohio data from MapZen, available for download here:
+https://s3.amazonaws.com/metro-extracts.mapzen.com/cincinnati_ohio.osm.bz2. You
+can also find it by searching for Cincinnati on this page:
+https://mapzen.com/metro-extracts/
+
+The Cincinnati area is near the southwestern corner of Ohio, near the Kentucky
+border. I chose the Cincinnati data because I grew up in Cincinnati.
