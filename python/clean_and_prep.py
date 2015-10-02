@@ -197,4 +197,4 @@ def process_map(file_in):
                 element.clear()
 
 if __name__ == "__main__":
-    process_map('example.osm')
+    process_map('cincinnati_ohio.osm')
